@@ -18,7 +18,7 @@ use TYPO3\CMS\Core\Attribute\AsEventListener;
 
 class ModifyNewContentElementWizardItems
 {
-    #[AsEventListener('evoweb/sitepackage/add-foreign-table-parent-uid-to-new-content-element-wizard-items')]
+    #[AsEventListener('content-blocksadd-foreign-table-parent-uid-to-new-content-element-wizard-items')]
     public function __invoke(ModifyNewContentElementWizardItemsEvent $event): void
     {
         $parent = $this->getParentIdFromRequest();
