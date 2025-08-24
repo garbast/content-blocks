@@ -21,31 +21,18 @@ class ModifyNewContentElementWizardItems
     #[AsEventListener('content-blocksadd-foreign-table-parent-uid-to-new-content-element-wizard-items')]
     public function __invoke(ModifyNewContentElementWizardItemsEvent $event): void
     {
-        $parent = $this->getParentIdFromRequest();
-        if ($parent !== null) {
+        $foreignTableParentUid = $this->getParentIdFromRequest($event->getRequest());
+        if ($foreignTableParentUid > 0) {
             $wizardItems = $event->getWizardItems();
             foreach ($wizardItems as $key => $wizardItem) {
-                $wizardItems[$key]['defaultValues']['foreign_table_parent_uid'] = $parent;
+                $wizardItems[$key]['defaultValues']['foreign_table_parent_uid'] = $foreignTableParentUid;
             }
             $event->setWizardItems($wizardItems);
         }
     }
 
-    protected function getParentIdFromRequest(): ?int
+    protected function getParentIdFromRequest(ServerRequestInterface $request): int
     {
-        $request = $this->getServerRequest();
-        if ($request === null) {
-            return null;
-        }
-        $queryParams = $request->getQueryParams();
-        if (isset($queryParams['foreign_table_parent_uid']) && (int)$queryParams['foreign_table_parent_uid'] > 0) {
-            return (int)$queryParams['foreign_table_parent_uid'];
-        }
-        return null;
-    }
-
-    protected function getServerRequest(): ?ServerRequestInterface
-    {
-        return $GLOBALS['TYPO3_REQUEST'] ?? null;
+        return (int)($request->getQueryParams()['foreign_table_parent_uid'] ?? 0);
     }
 }
