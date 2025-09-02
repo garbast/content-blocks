@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace TYPO3\CMS\ContentBlocks\ViewHelpers;
+namespace TYPO3\CMS\ContentBlocks\ViewHelpers\Link;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
@@ -33,7 +33,7 @@ class NewContentAfterChildUrlViewHelper extends AbstractViewHelper
         parent::initializeArguments();
         $this->registerArgument('container', ContentBlockData::class, 'Container element', true);
         $this->registerArgument('identifier', 'string', 'identifier', true);
-        $this->registerArgument('record', GridColumnItem::class, 'Record', true);
+        $this->registerArgument('record', GridColumnItem::class, 'Record');
     }
 
     public function render(): ButtonDefinition
@@ -42,17 +42,18 @@ class NewContentAfterChildUrlViewHelper extends AbstractViewHelper
         $container = $this->arguments['container'];
         /** @var string $identifier */
         $identifier = $this->arguments['identifier'];
-        /** @var GridColumnItem $record */
+        /** @var ?GridColumnItem $record */
         $record = $this->arguments['record'];
 
         $columnNumber = 0;
         $defVals = $this->getDefValsIfOneSpecificContentTypeAllowed($container, $identifier);
+        $target = -($record->getRecord()['uid'] ?? 0);
         if ($defVals !== null) {
             $onlyOneContentTypeAllowed = true;
-            $newContentUrl = $this->getNewContentEditUrl($container, $columnNumber, -($record->getRecord()['uid'] ?? 0), $defVals);
+            $newContentUrl = $this->getNewContentEditUrl($container, $columnNumber, $target, $defVals);
         } else {
             $onlyOneContentTypeAllowed = false;
-            $newContentUrl = $this->getNewContentWizardUrl($container, $columnNumber, -($record->getRecord()['uid'] ?? 0));
+            $newContentUrl = $this->getNewContentWizardUrl($container, $columnNumber, $target);
         }
 
         return new ButtonDefinition($newContentUrl, $onlyOneContentTypeAllowed);

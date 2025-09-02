@@ -11,35 +11,13 @@
             <f:for each="{data._grids.{identifier}.grid.rows}" as="row">
                 <f:for each="{row.columns}" as="column">
                     <div data-colpos="{colpos}" data-language-uid="{column.context.siteLanguage.languageId}" class="t3-page-ce-wrapper">
+                        <f:render section="buttonBefore" arguments="{data: data, column: column, identifier: identifier}"/>
+
                         <f:for each="{column.items}" as="item" iteration="iterator">
                             <f:render partial="PageLayout/Record" arguments="{item: item, allowEditContent: allowEditContent}" />
 
                             <f:if condition="{iterator.isLast} && {allowEditContent}">
-                                <div class="t3-page-ce t3js-page-ce">
-                                    <div class="t3-page-ce-actions t3js-page-new-ce" id="colpos-{item.column.columnNumber}-page-{item.context.pageId}-{item.column.uniqueId}">
-                                        <f:variable name="buttonDefinition"><sp:newContentAfterChildUrl container="{data}" identifier="{identifier}" record="{item}"/></f:variable>
-                                        <f:if condition="{buttonDefinition.onlyOneContentTypeAllowed}">
-                                            <f:then>
-                                                <a href="{buttonDefinition.newContentUrl}"
-                                                   title="{f:translate(id: 'LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:newContentElement')}"
-                                                   class="btn btn-default btn-sm">
-                                                    <core:icon identifier="actions-add" />
-                                                    <f:translate id="LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:createNewContent" />
-                                                </a>
-                                            </f:then>
-                                            <f:else>
-                                                <typo3-backend-new-content-element-wizard-button
-                                                    url="{buttonDefinition.newContentUrl}"
-                                                    subject="{f:translate(id: 'LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:newContentElement')}">
-                                                    <button type="button" class="btn btn-default btn-sm">
-                                                        <core:icon identifier="actions-add" />
-                                                        <f:translate id="LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:createNewContent" />
-                                                    </button>
-                                                </typo3-backend-new-content-element-wizard-button>
-                                            </f:else>
-                                        </f:if>
-                                    </div>
-                                </div>
+                                <f:render section="buttonAfter" arguments="{data: data, column: column, identifier: identifier, item: item}"/>
                             </f:if>
                         </f:for>
                     </div>
@@ -48,3 +26,44 @@
         </td>
     </tr>
 </table>
+
+<f:section name="buttonBefore">
+    <div class="t3-page-ce t3js-page-ce">
+        <div class="t3-page-ce-actions t3js-page-new-ce" id="colpos-{column.columnNumber}-page-{data.pid}-{column.uniqueId}">
+            <f:variable name="buttonDefinition"><sp:link.newContentBeforeChildUrl container="{data}" identifier="{identifier}" record="{data}"/></f:variable>
+            <f:render section="button" arguments="{_all}"/>
+        </div>
+    </div>
+</f:section>
+
+<f:section name="buttonAfter">
+    <div class="t3-page-ce t3js-page-ce">
+        <div class="t3-page-ce-actions t3js-page-new-ce" id="colpos-{column.columnNumber}-page-{item.context.pageId}-{column.uniqueId}">
+            <f:variable name="buttonDefinition"><sp:link.newContentAfterChildUrl container="{data}" identifier="{identifier}" record="{item}"/></f:variable>
+            <f:render section="button" arguments="{_all}"/>
+        </div>
+    </div>
+</f:section>
+
+<f:section name="button">
+    <f:if condition="{buttonDefinition.onlyOneContentTypeAllowed}">
+        <f:then>
+            <a href="{buttonDefinition.newContentUrl}"
+               title="{f:translate(id: 'LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:newContentElement')}"
+               class="btn btn-default btn-sm">
+                <core:icon identifier="actions-add" />
+                <f:translate id="LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:createNewContent" />
+            </a>
+        </f:then>
+        <f:else>
+            <typo3-backend-new-content-element-wizard-button
+                url="{buttonDefinition.newContentUrl}"
+                subject="{f:translate(id: 'LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:newContentElement')}">
+                <button type="button" class="btn btn-default btn-sm">
+                    <core:icon identifier="actions-add" />
+                    <f:translate id="LLL:EXT:backend/Resources/Private/Language/locallang_layout.xlf:createNewContent" />
+                </button>
+            </typo3-backend-new-content-element-wizard-button>
+        </f:else>
+    </f:if>
+</f:section>
