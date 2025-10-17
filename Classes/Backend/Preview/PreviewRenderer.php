@@ -65,6 +65,9 @@ class PreviewRenderer extends StandardContentPreviewRenderer
 
     public function renderPageModulePreviewContent(GridColumnItem $item): string
     {
+        if (!$this->hasPreviewHtml($item)) {
+            return parent::renderPageModulePreviewContent($item);
+        }
         if (!$this->hasPreviewLayout($item)) {
             $template = $this->getContentBlockTemplatePath($item) . '/' . ContentBlockPathUtility::getBackendPreviewFileName();
             trigger_error(
@@ -100,9 +103,11 @@ class PreviewRenderer extends StandardContentPreviewRenderer
         $record = $item->getRecord();
         $table = $item->getTable();
         $resolvedRecord = $this->recordFactory->createResolvedRecordFromDatabaseRow($table, $record);
-        $data = $this->contentBlockDataDecorator->decorate($resolvedRecord, $item->getContext());
+        $contentBlockData = $this->contentBlockDataDecorator->decorate($resolvedRecord, $item->getContext());
+        $settings['_content_block_name'] = $contentBlockData->get('_name');
         $view = $this->createView($request, $item, $section);
-        $view->assign('data', $data);
+        $view->assign('data', $contentBlockData);
+        $view->assign('settings', $settings);
         $result = $view->render();
         $result = trim($result);
         return $result;
@@ -175,14 +180,26 @@ class PreviewRenderer extends StandardContentPreviewRenderer
         return $contentBlockPrivatePath;
     }
 
+    protected function getAbsolutePreviewHtmlTemplatePath(GridColumnItem $item): string
+    {
+        $templatePath = $this->getContentBlockTemplatePath($item);
+        $templatePathAndFilename = $templatePath . '/' . ContentBlockPathUtility::getBackendPreviewFileName();
+        $absoluteTemplatePath = GeneralUtility::getFileAbsFileName($templatePathAndFilename);
+        return $absoluteTemplatePath;
+    }
+
+    protected function hasPreviewHtml(GridColumnItem $item): bool
+    {
+        $absoluteTemplatePath = $this->getAbsolutePreviewHtmlTemplatePath($item);
+        return file_exists($absoluteTemplatePath);
+    }
+
     /**
      * @deprecated Remove in Content Blocks v2.0
      */
     protected function hasPreviewLayout(GridColumnItem $item): bool
     {
-        $templatePath = $this->getContentBlockTemplatePath($item);
-        $templatePathAndFilename = $templatePath . '/' . ContentBlockPathUtility::getBackendPreviewFileName();
-        $absoluteTemplatePath = GeneralUtility::getFileAbsFileName($templatePathAndFilename);
+        $absoluteTemplatePath = $this->getAbsolutePreviewHtmlTemplatePath($item);
         if (!file_exists($absoluteTemplatePath)) {
             return false;
         }
