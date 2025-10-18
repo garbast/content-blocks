@@ -28,21 +28,24 @@ class AbstractNewContentViewHelper extends AbstractViewHelper
     {
         $inlineParentTableName = $container->getMainType();
         $containerRecordType = $container->getRecordType();
+
         if (!$this->tableDefinitionCollection->hasTable($inlineParentTableName)) {
             return null;
         }
-
         $containerTableDefinition = $this->tableDefinitionCollection->getTable($inlineParentTableName);
+
         if ($containerTableDefinition->contentTypeDefinitionCollection->hasType($containerRecordType)) {
             $containerTypeDefinition = $containerTableDefinition->contentTypeDefinitionCollection
                 ->getType($containerRecordType);
-            $override = null;
+            $overriddenFieldDefinition = null;
             foreach ($containerTypeDefinition->getOverrideColumns() as $overrideColumn) {
                 if ($overrideColumn->identifier === $identifier) {
-                    $override = $overrideColumn;
+                    $overriddenFieldDefinition = $overrideColumn;
                 }
             }
-            $allowedRecordTypes = $override ? $override->fieldType->getTca()['config']['foreign_match_fields'] : [];
+            $allowedRecordTypes = $overriddenFieldDefinition ?
+                $overriddenFieldDefinition->fieldType->getAllowedRecordTypes()
+                : [];
             if (count($allowedRecordTypes) === 1) {
                 return ['CType' => array_values($allowedRecordTypes)[0]];
             }

@@ -59,7 +59,19 @@ final readonly class AllowedRecordTypesInCollection implements FormDataProviderI
         if ($fieldDefinition->fieldType instanceof CollectionFieldType === false) {
             return $result;
         }
-        $allowedRecordTypes = $fieldDefinition->fieldType->getAllowedRecordTypes();
+        $inlineParentRecordType = $result['inlineParentRecordType'];
+        if (!$parentTableDefinition->contentTypeDefinitionCollection->hasType($inlineParentRecordType)) {
+            return $result;
+        }
+        $inlineParentTableDefintion = $parentTableDefinition->contentTypeDefinitionCollection
+            ->getType($inlineParentRecordType);
+        $overriddenFieldDefinition = null;
+        foreach ($inlineParentTableDefintion->getOverrideColumns() as $overrideColumn) {
+            if ($overrideColumn->identifier === $inlineParentFieldName) {
+                $overriddenFieldDefinition = $overrideColumn;
+            }
+        }
+        $allowedRecordTypes = $overriddenFieldDefinition->fieldType->getAllowedRecordTypes();
         if ($allowedRecordTypes === []) {
             return $result;
         }
